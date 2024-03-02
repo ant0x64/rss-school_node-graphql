@@ -105,5 +105,15 @@ export const mutations = new GraphQLObjectType({
             args: {id: {type: UUIDType}},
             resolve: resolvers.deleteProfile
         },
+        subscribeTo: {
+            type: UserType,
+            args: {userId: {type: UUIDType}, authorId: {type: UUIDType},},
+            resolve: resolvers.subscribeTo,
+        },
+        unsubscribeFrom: {
+            type: GraphQLBoolean,
+            args: {userId: {type: UUIDType}, authorId: {type: UUIDType},},
+            resolve: resolvers.unsubscribeFrom
+        }
     },
 });

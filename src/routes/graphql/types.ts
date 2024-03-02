@@ -137,6 +137,7 @@ export const ChangeProfileInput = new GraphQLInputObjectType({
 export const CreateProfileInput = new GraphQLInputObjectType({
     name: 'CreateProfileInput',
     fields: {
-        ...getRequiredFields(ChangeProfileInput, ['isMale', 'yearOfBirth', 'userId', 'memberTypeId']),
+        ...getRequiredFields(ChangeProfileInput, ['isMale', 'yearOfBirth', 'memberTypeId']),
+        userId: {type: ProfileType.getFields().userId.type as GraphQLInputType},
     }
 });

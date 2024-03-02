@@ -85,4 +85,26 @@ export default {
     deleteProfile: async (_, args: {id: string}, { db }: Context) => {
         return !!(await db.profile.delete({where: {id: args.id}}))
     },
+    subscribeTo: (_, args: { userId: string, authorId: string}, { db }: Context) => {
+        return db.user.update({
+            where: {id: args.userId},
+            data: {
+                userSubscribedTo: {
+                    create: {
+                        authorId: args.authorId,
+                    },
+                },
+            },
+        })
+    },
+    unsubscribeFrom: async (_, args: { userId: string, authorId: string}, { db }: Context) => {
+        return !!(await db.subscribersOnAuthors.delete({
+            where: {
+                subscriberId_authorId: {
+                    subscriberId: args.userId,
+                    authorId: args.authorId
+                }
+            }
+        }))
+    },
 }
