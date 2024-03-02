@@ -1,6 +1,9 @@
 import { Context } from "./types/context.js";
+import { Prisma }  from '@prisma/client';
 
 export default {
+    // QUERIES
+
     getMemberTypes: (_, args, { db }: Context) => {
         return db.memberType.findMany();
     },
@@ -43,5 +46,43 @@ export default {
     },
     getProfileByUserID: (parent: { id: string}, _args, { db }: Context) => {
         return db.profile.findUnique({ where: { userId: parent.id } });
+    },
+
+    // MUTATIONS
+    createPost: (_, args: { dto: Prisma.PostUncheckedCreateInput }, { db }: Context) => {
+        return db.post.create({data: args.dto})
+    },
+    createUser: (_, args: { dto: Prisma.UserUncheckedCreateInput }, { db }: Context) => {
+        return db.user.create({data: args.dto})
+    },
+    createProfile: (_, args: { dto: Prisma.ProfileUncheckedCreateInput }, { db }: Context) => {
+        return db.profile.create({data: args.dto})
+    },
+    changePost: (_, args: { 
+        dto: Prisma.PostUncheckedUpdateInput,
+        id: string
+     }, { db }: Context) => {
+        return db.post.update({data: {...args.dto}, where: {id: args.id}})
+    },
+    changeUser: (_, args: { 
+        dto: Prisma.UserUncheckedUpdateInput,
+        id: string
+     }, { db }: Context) => {
+        return db.user.update({data: {...args.dto}, where: {id: args.id}})
+    },
+    changeProfile: (_, args: { 
+        dto: Prisma.ProfileUncheckedUpdateInput,
+        id: string
+     }, { db }: Context) => {
+        return db.profile.update({data: {...args.dto}, where: {id: args.id}})
+    },
+    deletePost: async (_, args: {id: string}, { db }: Context) => {
+        return !!(await db.post.delete({where: {id: args.id}}))
+    },
+    deleteUser: async (_, args: {id: string}, { db }: Context) => {
+        return !!(await db.user.delete({where: {id: args.id}}))
+    },
+    deleteProfile: async (_, args: {id: string}, { db }: Context) => {
+        return !!(await db.profile.delete({where: {id: args.id}}))
     },
 }

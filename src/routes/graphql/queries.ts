@@ -1,6 +1,6 @@
-import { GraphQLObjectType, GraphQLList, GraphQLNonNull } from "graphql";
+import { GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLBoolean } from "graphql";
 
-import { MemberTypeId, MemberType, PostType, ProfileType, UserType } from './types.js';
+import { MemberTypeId, MemberType, PostType, ProfileType, UserType, CreatePostInput, CreateUserInput, CreateProfileInput, ChangePostInput, ChangeUserInput, ChangeProfileInput } from './types.js';
 import { UUIDType as UUID } from "./types/uuid.js";
 import resolvers from "./resolvers.js";
 
@@ -46,4 +46,64 @@ export const queries = new GraphQLObjectType({
             resolve: resolvers.getProfile,
         },
     }
+});
+
+export const mutations = new GraphQLObjectType({
+    name: 'Mutation',
+    fields: {
+        createPost: {
+            type: PostType,
+            args: {dto: {type: CreatePostInput}},
+            resolve: resolvers.createPost
+        },
+        createUser: {
+            type: UserType,
+            args: {dto: {type: CreateUserInput}},
+            resolve: resolvers.createUser
+        },
+        createProfile: {
+            type: ProfileType,
+            args: {dto: {type: CreateProfileInput}},
+            resolve: resolvers.createProfile
+        },
+        changePost: {
+            type: PostType,
+            args: {
+                id: {type: UUIDType},
+                dto: {type: ChangePostInput}
+            },
+            resolve: resolvers.changePost
+        },
+        changeUser: {
+            type: UserType,
+            args: {
+                id: {type: UUIDType},
+                dto: {type: ChangeUserInput}
+            },
+            resolve: resolvers.changeUser
+        },
+        changeProfile: {
+            type: ProfileType,
+            args: {
+                id: {type: UUIDType},
+                dto: {type: ChangeProfileInput}
+            },
+            resolve: resolvers.changeProfile
+        },
+        deletePost: {
+            type: GraphQLBoolean,
+            args: {id: {type: UUIDType}},
+            resolve: resolvers.deletePost
+        },
+        deleteUser: {
+            type: GraphQLBoolean,
+            args: {id: {type: UUIDType}},
+            resolve: resolvers.deleteUser
+        },
+        deleteProfile: {
+            type: GraphQLBoolean,
+            args: {id: {type: UUIDType}},
+            resolve: resolvers.deleteProfile
+        },
+    },
 });
