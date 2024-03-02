@@ -1,63 +1,49 @@
-import { GraphQLObjectType, GraphQLList } from "graphql";
+import { GraphQLObjectType, GraphQLList, GraphQLNonNull } from "graphql";
 
-import { Context } from "./types/context.js";
-import { MemberType, PostType, ProfileType, UserType } from './types.js';
-import { UUIDType } from "./types/uuid.js";
+import { MemberTypeId, MemberType, PostType, ProfileType, UserType } from './types.js';
+import { UUIDType as UUID } from "./types/uuid.js";
+import resolvers from "./resolvers.js";
+
+const UUIDType = new GraphQLNonNull(UUID);
 
 export const queries = new GraphQLObjectType({
     name: 'Query',
-    fields: () => ({
+    fields: {
         memberTypes: {
             type: new GraphQLList(MemberType),
-            resolve: (_, args, { db }: Context) => {
-                return db.memberType.findMany();
-            }
+            resolve: resolvers.getMemberTypes
         },
         memberType: {
             type: MemberType,
-            args: {id: {type: UUIDType}},
-            resolve: (_, { id }: { id: string }, { db }: Context) => {
-                return db.memberType.findUnique({where: { id }});
-            },
+            args: {id: {type: MemberTypeId}},
+            resolve: resolvers.getMemberType
         },
         posts: {
             type: new GraphQLList(PostType),
-            resolve: (_, args, { db }: Context) => {
-                return db.post.findMany();
-            },
+            resolve: resolvers.getPosts,
         },
         post: {
             type: PostType,
             args: {id: {type: UUIDType}},
-            resolve: (_, { id }: { id: string }, { db }: Context) => {
-                return db.post.findUnique({where: { id }});
-            },
+            resolve: resolvers.getPost,
         },
         users: {
             type: new GraphQLList(UserType),
-            resolve: (_, args, { db }: Context) => {
-                return db.user.findMany();
-            },
+            resolve: resolvers.getUsers,
         },
         user: {
             type: UserType,
             args: {id: {type: UUIDType}},
-            resolve: (_, { id }: { id: string }, { db }: Context) => {
-                return db.user.findUnique({where: { id }});
-            },
+            resolve: resolvers.getUser,
         },
         profiles: {
             type: new GraphQLList(ProfileType),
-            resolve: (_, args, { db }: Context) => {
-                return db.profile.findMany();
-            },
+            resolve: resolvers.getProfiles,
         },
         profile: {
             type: ProfileType,
             args: {id: {type: UUIDType}},
-            resolve: (_, { id }: { id: string }, { db }: Context) => {
-                return db.profile.findUnique({where: { id }});
-            },
+            resolve: resolvers.getProfile,
         },
-    })
+    }
 });
