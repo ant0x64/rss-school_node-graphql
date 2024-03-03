@@ -12,11 +12,15 @@ export default class Loader {
   readonly userProfile: DataLoader<string, Profile | undefined>;
 
   constructor(db: PrismaClient) {
-    this.member = new DataLoader((keys) => {
-      return db.memberType.findMany({ where: { id: { in: keys as string[] } } });
+    this.member = new DataLoader(async (keys) => {
+      const result = await db.memberType.findMany({
+        where: { id: { in: keys as string[] } },
+      });
+      return keys.map((k) => result.find((v) => k === v.id));
     });
-    this.user = new DataLoader((keys) => {
-      return db.user.findMany({ where: { id: { in: keys as string[] } } });
+    this.user = new DataLoader(async (keys) => {
+      const result = await db.user.findMany({ where: { id: { in: keys as string[] } } });
+      return keys.map((k) => result.find((v) => k === v.id));
     });
     this.subscribed = new DataLoader(async (keys) => {
       const result = await db.subscribersOnAuthors.findMany({
@@ -24,7 +28,12 @@ export default class Loader {
         select: { author: true, subscriberId: true },
       });
       return keys.map((key) =>
-        result.filter((sub) => key === sub.subscriberId).map((sub) => sub.author),
+        result
+          .filter((sub) => key === sub.subscriberId)
+          .map((sub) => {
+            this.user.prime(sub.author.id, sub.author);
+            return sub.author;
+          }),
       );
     });
     this.subscribers = new DataLoader(async (keys) => {
@@ -33,11 +42,17 @@ export default class Loader {
         select: { subscriber: true, authorId: true },
       });
       return keys.map((key) =>
-        result.filter((sub) => key === sub.authorId).map((sub) => sub.subscriber),
+        result
+          .filter((sub) => key === sub.authorId)
+          .map((sub) => {
+            this.user.prime(sub.subscriber.id, sub.subscriber);
+            return sub.subscriber;
+          }),
       );
     });
-    this.post = new DataLoader((keys) => {
-      return db.post.findMany({ where: { id: { in: keys as string[] } } });
+    this.post = new DataLoader(async (keys) => {
+      const result = await db.post.findMany({ where: { id: { in: keys as string[] } } });
+      return keys.map((k) => result.find((v) => k === v.id));
     });
     this.userPosts = new DataLoader(async (keys) => {
       const res = await db.post.findMany({
@@ -45,8 +60,9 @@ export default class Loader {
       });
       return keys.map((id) => res.filter((post) => id === post.authorId));
     });
-    this.profile = new DataLoader((keys) => {
-      return db.profile.findMany({ where: { id: { in: keys as string[] } } });
+    this.profile = new DataLoader(async (keys) => {
+      const result = await db.profile.findMany({ where: { id: { in: keys as string[] } } });
+      return keys.map((k) => result.find((v) => k === v.id));
     });
     this.userProfile = new DataLoader(async (keys) => {
       const res = await db.profile.findMany({
