@@ -7,11 +7,11 @@ export default {
   getMemberTypes: (_, args, { db }: Context) => {
     return db.memberType.findMany();
   },
-  getMemberType: (_, { id }: { id: string }, { db }: Context) => {
-    return db.memberType.findUnique({ where: { id } });
+  getMemberType: (_, { id }: { id: string }, { loader }: Context) => {
+    return loader.member.load(id);
   },
-  getMemberTypeByProfile: (parent: { memberTypeId: string }, _args, { db }: Context) => {
-    return db.memberType.findUnique({ where: { id: parent.memberTypeId } });
+  getMemberTypeByProfile: (parent: { memberTypeId: string }, _args, { loader }: Context) => {
+    return loader.member.load(parent.memberTypeId);
   },
   getPosts: (_, args, { db }: Context) => {
     return db.post.findMany();
@@ -19,30 +19,28 @@ export default {
   getPost: (_, { id }: { id: string }, { db }: Context) => {
     return db.post.findUnique({ where: { id } });
   },
-  getPostsByUserID: (parent: { id: string }, _args, { db }: Context) => {
-    return db.post.findMany({ where: { authorId: parent.id } });
+  getPostsByUserID: (parent: { id: string }, _args, { loader }: Context) => {
+    return loader.userPosts.load(parent.id);
   },
-  getUsers: (_, args, { db }: Context) => {
-    return db.user.findMany();
-  },
-  getUser: (_, { id }: { id: string }, { db }: Context) => {
-    return db.user.findUnique({ where: { id } });
-  },
-  getUserSubscribedTo: async (parent: { id: string }, _args, { db }: Context) => {
-    return (
-      await db.subscribersOnAuthors.findMany({
-        where: { subscriberId: parent.id },
-        select: { author: true },
+  getUsers: (_, args, { db, loader }: Context) => {
+    const users = db.user.findMany();
+    users
+      .then((users) => {
+        users.map((u) => {
+          loader.user.prime(u.id, u);
+        });
       })
-    ).map((row) => row.author);
+      .catch(() => {});
+    return users;
   },
-  getSubscribedToUser: async (parent: { id: string }, _args, { db }: Context) => {
-    return (
-      await db.subscribersOnAuthors.findMany({
-        where: { authorId: parent.id },
-        select: { subscriber: true },
-      })
-    ).map((row) => row.subscriber);
+  getUser: (_, { id }: { id: string }, { loader }: Context) => {
+    return loader.user.load(id);
+  },
+  getUserSubscribedTo: async (parent: { id: string }, _args, { loader }: Context) => {
+    return loader.subscribed.load(parent.id);
+  },
+  getSubscribedToUser: async (parent: { id: string }, _args, { loader }: Context) => {
+    return loader.subscribers.load(parent.id);
   },
   getProfiles: (_, args, { db }: Context) => {
     return db.profile.findMany();
@@ -50,8 +48,8 @@ export default {
   getProfile: (_, { id }: { id: string }, { db }: Context) => {
     return db.profile.findUnique({ where: { id } });
   },
-  getProfileByUserID: (parent: { id: string }, _args, { db }: Context) => {
-    return db.profile.findUnique({ where: { userId: parent.id } });
+  getProfileByUserID: (parent: { id: string }, _args, { loader }: Context) => {
+    return loader.userProfile.load(parent.id);
   },
 
   // MUTATIONS
